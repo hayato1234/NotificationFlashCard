@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="make_new_folder_input" type="id"/>
+    <item name="change_folder_title" type="id"/>
+</resources>
