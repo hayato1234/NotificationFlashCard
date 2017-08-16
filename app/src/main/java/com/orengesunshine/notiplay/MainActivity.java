@@ -158,18 +158,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PendingIntent exitPI = PendingIntent.getBroadcast(this, 123, exitIntent, 0);
             notificationViewB.setOnClickPendingIntent(R.id.exit_button, exitPI);
 
+            ArrayList<Card> intentCards = (ArrayList<Card>) selectedCards;
+            Log.d(TAG, "main startNotification: "+intentCards.get(0).getBack());
             int preButtonId = 11;
             Intent preIntent = new Intent("previous_clicked");
             preIntent.putExtra(BUTTON_ID, preButtonId);
-            preIntent.putParcelableArrayListExtra(SHOWING_CARDS,(ArrayList<Card>) selectedCards);
-            PendingIntent prePI = PendingIntent.getBroadcast(this, 123, preIntent, 0);
+            preIntent.putParcelableArrayListExtra(SHOWING_CARDS,intentCards);
+            PendingIntent prePI = PendingIntent.getBroadcast(this, 123, preIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             notificationViewB.setOnClickPendingIntent(R.id.previous_button, prePI);
 
             int flipButtonId = 12;
             Intent flipIntent = new Intent("flip_clicked");
             flipIntent.putExtra(BUTTON_ID, flipButtonId);
             flipIntent.putParcelableArrayListExtra(SHOWING_CARDS,(ArrayList<Card>) selectedCards);
-            PendingIntent flipPI = PendingIntent.getBroadcast(this, 123,flipIntent , 0);
+            PendingIntent flipPI = PendingIntent.getBroadcast(this, 123,flipIntent , PendingIntent.FLAG_UPDATE_CURRENT);
             notificationViewB.setOnClickPendingIntent(R.id.flip_button, flipPI);
 
 //        int nextButtonId = 13;
@@ -177,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent buttonIntent2 = new Intent("next_clicked");
             buttonIntent2.putExtra(BUTTON_ID,nextButtonId);
             buttonIntent2.putParcelableArrayListExtra(SHOWING_CARDS,(ArrayList<Card>) selectedCards);
-            PendingIntent pI2 = PendingIntent.getBroadcast(this, 123, buttonIntent2, 0);
+            PendingIntent pI2 = PendingIntent.getBroadcast(this, 123, buttonIntent2, PendingIntent.FLAG_UPDATE_CURRENT);
             notificationViewB.setOnClickPendingIntent(R.id.next_button, pI2);
 
             Intent notiIntent = new Intent(getApplicationContext(), MainActivity.class);
@@ -189,32 +191,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setContentIntent(pendingIntent);
             //.addAction(R.drawable.ic_play,"next",pendingIntent);
             manager.notify(NOTIFICATION_ID, notifBuilder.build());
+        }else {
+            Log.d(TAG, "main startNotification: list is null");
         }
-
-
-//        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
-//        notifBuilder.setContentIntent(pendingIntent);
-//        notifBuilder.setPriority(-1);
-
-//        int exitButtonId = 10;
-//        Intent exitButtonIntent = new Intent("exit_button_clicked");
-//        exitButtonIntent.putExtra(BUTTON_ID, exitButtonId);
-//        PendingIntent pI = PendingIntent.getBroadcast(this,123,exitButtonIntent,0);
-//        notificationViewB.setOnClickPendingIntent(R.id.previous_button,pI);
-
-
-
-//        NotificationCompat.InboxStyle inbox = new NotificationCompat.InboxStyle();
-//        inbox.setBigContentTitle("expanding title");
-//        inbox.addLine("line 1");
-//        inbox.addLine("this is line2 but can be expanded to multiple line? i need little more words to be long enough to exceed width");
-//        notifBuilder.setStyle(inbox);
-//        notifBuilder.setCustomBigContentView(notificationViewB);
-
-//        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
-//        notifBuilder.setContentIntent(pendingIntent);
-//        notifBuilder.setPriority(-1);
-
     }
 
     private void endNotification() {
@@ -251,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case 2:
                 Log.d(TAG, "main onButtonClicked start: " + position + " titile:" + folders.get(position).getTitle());
+                selectedCards = new ArrayList<>();
                 selectedCards = db.getCards(folders.get(position).getTitle());
                 startNotification();
                 break;
@@ -263,19 +243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onReceive(Context context, Intent intent) {
             NotificationManager manager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-//            notificationViewB.setTextViewText(R.id.flash_text,"you clicked!");
-//            Intent notiIntent = new Intent(context,MainActivity.class);
-//            NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(context);
-//            PendingIntent pendingIntent = PendingIntent.getActivity(context,0,notiIntent,0);
-//            notifBuilder.setSmallIcon(R.drawable.ic_play)
-//                    .setAutoCancel(true)
-//                    .setPriority(-1)
-//                    .setCustomBigContentView(notificationViewB)
-//                    .setContentIntent(pendingIntent);
-//            manager.notify(1235,notifBuilder.build());
-//            Log.d("tag", "receved "+intent.getExtras().getInt(BUTTON_ID));
-
-
+//
             if (intent.getExtras() != null) {
                 Log.d("tag", "receved "+intent.getExtras().getInt(BUTTON_ID));
                 switch (intent.getExtras().getInt(BUTTON_ID)) {
@@ -304,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 12: //flip
                         if (intent.getParcelableArrayListExtra(SHOWING_CARDS)!=null){
+                            Log.d(TAG, "main onReceive: "+((Card)intent.getParcelableArrayListExtra(SHOWING_CARDS).get(0)).getFront());
                             if (showingBack){
                                 notificationViewB.setTextViewText(R.id.flash_text, ((Card)intent.getParcelableArrayListExtra(SHOWING_CARDS).get(currentNum)).getFront());
                                 showingBack = false;
@@ -348,6 +317,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        this.setIntent(intent);
     }
 
     @Override

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NotiPlay</string>
+    <string name="app_name">NotiFlash</string>
     <string name="start">start</string>
     <string name="end">end</string>
     <string name="title_activity_input_card">InputCardActivity</string>
